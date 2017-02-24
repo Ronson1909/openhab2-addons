@@ -1,10 +1,11 @@
 # Silvercrest Wifi Plug Binding
 
-This binding integrates the Silvercrest Wifi Socket SWS-A1 sold by Lidl.
+This binding integrates the Silvercrest Wifi Socket SWS-A1 sold by Lidl and the EasyHome Wifi Socket DS-124 sold by Aldi (excluding 433 MHz control).
 
 ## Supported Things
 
 - Silvercrest Wifi Socket SWS-A1 - [(Owner Manual)](http://www.lidl-service.com/static/118127777/103043_FI.pdf)   --   Tested with firmware version: 1.41, 1.60, 1.70
+- EasyHome Wifi Socket DIS-124 (https://www.aldi-sued.de/de/infos/aldi-sued-a-bis-z/s/serviceportal/ergebnisliste/sis/si/wifi-steckdose/)
 
 
 ## Discovery
@@ -17,7 +18,7 @@ The binding does not require any special configuration. The Wifi Socket should b
 
 ## Thing Configuration
 
-To configure a Wifi Socket manually only the mac address is required. You can check the Wifi Socket mac address in your router or using some mobile app.
+To configure a Wifi Socket manually the mac address and the vendor is required. You can check the Wifi Socket mac address in your router or using some mobile app. Supported vendors are either Silvercrest (Lidl) or EasyHome (Aldi). 
 
 Wifi Socket thing parameters:
 
@@ -26,12 +27,13 @@ Wifi Socket thing parameters:
 | macAddress | text | true | The socket MAC address |  |
 | hostAddress | text | false | The socket Host address. The binding is capable to discover the host address. |  |
 | updateInterval | integer | false | Update time interval in seconds to request the status of the socket. | 60 |
+| vendor | option | true | The vendor of the system ("Aldi_EasyHome" or "Lidl_Silvercrest") |  |
 
 
 E.g.
 
 ```
-Thing silvercrestwifisocket:wifiSocket:lamp [ macAddress="ACCF23343C50" ]
+Thing silvercrestwifisocket:wifiSocket:lamp [ macAddress="ACCF23343C50", vendor="Aldi_EasyHome" ]
 ```
 
 ## Channels
