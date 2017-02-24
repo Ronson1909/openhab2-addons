@@ -27,7 +27,7 @@ Wifi Socket thing parameters:
 | macAddress | text | true | The socket MAC address |  |
 | hostAddress | text | false | The socket Host address. The binding is capable to discover the host address. |  |
 | updateInterval | integer | false | Update time interval in seconds to request the status of the socket. | 60 |
-| vendor | option | true | The vendor of the system ("Aldi_EasyHome" or "Lidl_Silvercrest") |  |
+| vendor | option | true | The vendor of the system ("Aldi_EasyHome" or "Lidl_Silvercrest") | Lidl_Silvercrest |
 
 
 E.g.

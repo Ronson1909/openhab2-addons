@@ -11,6 +11,7 @@ package org.openhab.binding.silvercrestwifisocket;
 import java.util.Set;
 
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
+import org.openhab.binding.silvercrestwifisocket.internal.enums.SilvercrestWifiSocketVendor;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -66,6 +67,11 @@ public class SilvercrestWifiSocketBindingConstants {
      * Default Wifi socket refresh interval.
      */
     public static final long DEFAULT_REFRESH_INTERVAL = 60;
+
+    /**
+     * Default Wifi socket vendor.
+     */
+    public static final SilvercrestWifiSocketVendor DEFAULT_VENDOR = SilvercrestWifiSocketVendor.Lidl_Silvercrest;
 
     /**
      * Default Wifi socket default UDP port.

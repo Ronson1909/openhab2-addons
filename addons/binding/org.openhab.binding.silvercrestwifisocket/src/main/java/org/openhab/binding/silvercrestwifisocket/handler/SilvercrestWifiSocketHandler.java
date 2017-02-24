@@ -54,7 +54,7 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
 
     private String hostAddress;
     private String macAddress;
-    private SilvercrestWifiSocketVendor vendor;
+    private SilvercrestWifiSocketVendor vendor = SilvercrestWifiSocketBindingConstants.DEFAULT_VENDOR;
     private Long updateInterval = SilvercrestWifiSocketBindingConstants.DEFAULT_REFRESH_INTERVAL;
 
     private final WifiSocketPacketConverter converter = new WifiSocketPacketConverter();
