@@ -9,17 +9,20 @@
 package org.openhab.binding.silvercrestwifisocket.internal.entities;
 
 import org.openhab.binding.silvercrestwifisocket.internal.enums.SilvercrestWifiSocketRequestType;
+import org.openhab.binding.silvercrestwifisocket.internal.enums.SilvercrestWifiSocketVendor;
 
 /**
  * This POJO represents one Wifi Socket request.
  *
  * @author Jaime Vaz - Initial contribution
+ * @author Christian Heimerl - for integration of EasyHome
  *
  */
 public class SilvercrestWifiSocketRequest {
 
     private String macAddress;
     private SilvercrestWifiSocketRequestType type;
+    private SilvercrestWifiSocketVendor vendor;
 
     /**
      * Default constructor.
@@ -27,9 +30,11 @@ public class SilvercrestWifiSocketRequest {
      * @param macAddress the mac address
      * @param type the {@link SilvercrestWifiSocketRequestType}
      */
-    public SilvercrestWifiSocketRequest(final String macAddress, final SilvercrestWifiSocketRequestType type) {
+    public SilvercrestWifiSocketRequest(final String macAddress, final SilvercrestWifiSocketRequestType type,
+            final SilvercrestWifiSocketVendor vendor) {
         this.macAddress = macAddress;
         this.type = type;
+        this.vendor = vendor;
     }
 
     public String getMacAddress() {
@@ -46,5 +51,13 @@ public class SilvercrestWifiSocketRequest {
 
     public void setType(final SilvercrestWifiSocketRequestType type) {
         this.type = type;
+    }
+
+    public SilvercrestWifiSocketVendor getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(SilvercrestWifiSocketVendor vendor) {
+        this.vendor = vendor;
     }
 }

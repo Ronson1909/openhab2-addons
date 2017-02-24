@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
  * used across the whole binding.
  *
  * @author Jaime Vaz - Initial contribution
+ * @author Christian Heimerl - for integration of EasyHome
  */
 public class SilvercrestWifiSocketBindingConstants {
 
@@ -55,6 +56,10 @@ public class SilvercrestWifiSocketBindingConstants {
      * Host address configuration argument key.
      */
     public final static String HOST_ADDRESS_ARG = "hostAddress";
+    /**
+     * Host address configuration argument key.
+     */
+    public final static String VENDOR_ARG = "vendor";
 
     // -------------- Default values ----------------
     /**

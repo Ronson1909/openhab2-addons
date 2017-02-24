@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
  * each handler.
  *
  * @author Jaime Vaz - Initial contribution
+ * @author Christian Heimerl - for integration of EasyHome
  */
 public class SilvercrestWifiSocketMediator {
 

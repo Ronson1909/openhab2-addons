@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
  * This is the {@link DiscoveryService} for the Silvercrest Items.
  *
  * @author Jaime Vaz - Initial contribution
+ * @author Christian Heimerl - for integration of EasyHome
  *
  */
 public class SilvercrestWifiSocketDiscoveryService extends AbstractDiscoveryService {
