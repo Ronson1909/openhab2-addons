@@ -24,6 +24,7 @@ public class SilvercrestWifiSocketResponse {
     private String hostAddress;
     private SilvercrestWifiSocketResponseType type;
     private SilvercrestWifiSocketVendor vendor;
+    private String slaveAddress;
 
     /**
      * Default constructor.
@@ -32,14 +33,17 @@ public class SilvercrestWifiSocketResponse {
      * @param hostAddress the host address
      * @param type the {@link SilvercrestWifiSocketResponseType}
      * @param vendor the vendor of the socket
+     * @param slaveAddress the slave address of the socket or empty
      */
     public SilvercrestWifiSocketResponse(final String macAddress, final String hostAddress,
-            final SilvercrestWifiSocketResponseType type, final SilvercrestWifiSocketVendor vendor) {
+            final SilvercrestWifiSocketResponseType type, final SilvercrestWifiSocketVendor vendor,
+            final String slaveAddress) {
         super();
         this.macAddress = macAddress;
         this.hostAddress = hostAddress;
         this.type = type;
         this.vendor = vendor;
+        this.setSlaveAddress(slaveAddress);
     }
 
     /**
@@ -51,7 +55,7 @@ public class SilvercrestWifiSocketResponse {
      */
     public SilvercrestWifiSocketResponse(final String macAddress, final SilvercrestWifiSocketResponseType type,
             final SilvercrestWifiSocketVendor vendor) {
-        this(macAddress, null, type, vendor);
+        this(macAddress, null, type, vendor, "");
     }
 
     public String getMacAddress() {
@@ -82,7 +86,15 @@ public class SilvercrestWifiSocketResponse {
         return vendor;
     }
 
-    public void setVendor(SilvercrestWifiSocketVendor vendor) {
+    public void setVendor(final SilvercrestWifiSocketVendor vendor) {
         this.vendor = vendor;
+    }
+
+    public String getSlaveAddress() {
+        return slaveAddress;
+    }
+
+    public void setSlaveAddress(final String slaveAddress) {
+        this.slaveAddress = slaveAddress;
     }
 }

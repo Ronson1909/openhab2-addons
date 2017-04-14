@@ -9,7 +9,7 @@
 package org.openhab.binding.silvercrestwifisocket.internal.exceptions;
 
 /**
- * Exception throwed when one Mac address is not valid.
+ * Exception thrown when one Mac address is not valid.
  *
  * @author Jaime Vaz - Initial contribution
  *

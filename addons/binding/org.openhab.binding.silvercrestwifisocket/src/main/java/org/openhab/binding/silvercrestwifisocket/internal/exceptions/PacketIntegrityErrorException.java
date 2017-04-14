@@ -9,7 +9,7 @@
 package org.openhab.binding.silvercrestwifisocket.internal.exceptions;
 
 /**
- * Exception throwed when some packet has one integrity error.
+ * Exception thrown when some packet has one integrity error.
  *
  * @author Jaime Vaz - Initial contribution
  *

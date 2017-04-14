@@ -35,6 +35,10 @@
                         <option value="Aldi_EasyHome">Aldi (EasyHome)</option>
 	            </options>
             </parameter>
+            <parameter name="slaveAddress" type="text">
+                <label>Slave address</label>
+                <description>The slave address (3 hex pairs) of the socket or empty for the main unit (default).</description>
+            </parameter>
             
         </config-description>
         

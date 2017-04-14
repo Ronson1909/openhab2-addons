@@ -61,6 +61,10 @@ public class SilvercrestWifiSocketBindingConstants {
      * Host address configuration argument key.
      */
     public final static String VENDOR_ARG = "vendor";
+    /**
+     * Host address configuration argument key.
+     */
+    public final static String SLAVE_ADDRESS_ARG = "slaveAddress";
 
     // -------------- Default values ----------------
     /**

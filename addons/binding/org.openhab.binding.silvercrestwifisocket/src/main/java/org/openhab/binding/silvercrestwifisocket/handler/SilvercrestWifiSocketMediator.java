@@ -57,17 +57,24 @@ public class SilvercrestWifiSocketMediator {
      * @param receivedMessage the {@link SilvercrestWifiSocketResponse} message.
      */
     public void processReceivedPacket(final SilvercrestWifiSocketResponse receivedMessage) {
-        logger.debug("Received packet from: {} with content: [{}]", receivedMessage.getHostAddress(),
-                receivedMessage.getType());
+        logger.debug("Received packet from: {} for slave address: [{}] with content: [{}]",
+                receivedMessage.getHostAddress(), receivedMessage.getSlaveAddress(), receivedMessage.getType());
 
-        SilvercrestWifiSocketHandler handler = this.getHandlerRegistredByMac(receivedMessage.getMacAddress());
+        // to store if any handler was found, needed array because final is required in stream
+        final boolean found[] = new boolean[1];
 
-        if (handler != null) {
-            // deliver message to handler.
-            handler.newReceivedResponseMessage(receivedMessage);
-            logger.debug("Received message delivered with success to handler of mac {}",
-                    receivedMessage.getMacAddress());
-        } else {
+        // with slaves more than one handler can exist for a mac address
+        // --> call all handlers for a mac address:
+        // get all handlers, filter by mac address received in response and call handlers' newReceivedResponseMessage
+        this.handlersRegisteredByThing.values().stream()
+                .filter(h -> receivedMessage.getMacAddress().equals(h.getMacAddress())).forEach(h -> {
+                    found[0] = true;
+                    h.newReceivedResponseMessage(receivedMessage);
+                    logger.debug("Received message delivered with success to handler of mac {}",
+                            receivedMessage.getMacAddress());
+                });
+
+        if (!found[0]) {
             logger.debug("There is no handler registered for mac address: {}", receivedMessage.getMacAddress());
             // notify discovery service of thing found!
             this.silvercrestDiscoveryService.discoveredWifiSocket(receivedMessage.getMacAddress(),
@@ -102,9 +109,9 @@ public class SilvercrestWifiSocketMediator {
      * Utilitary method to get the registered thing handler in mediator by the mac address.
      *
      * @param macAddress the mac address of the thing of the handler.
-     * @return {@link SilvercrestWifiSocketHandler} if found.
+     * @return {@link SilvercrestWifiSocketHandler} if found, otherwise null.
      */
-    private SilvercrestWifiSocketHandler getHandlerRegistredByMac(final String macAddress) {
+    private SilvercrestWifiSocketHandler getHandlerRegistered(final String macAddress) {
         SilvercrestWifiSocketHandler searchedHandler = null;
         for (SilvercrestWifiSocketHandler handler : this.handlersRegisteredByThing.values()) {
             if (macAddress.equals(handler.getMacAddress())) {

@@ -12,6 +12,7 @@ package org.openhab.binding.silvercrestwifisocket.internal.enums;
  * This enum represents the available Wifi Socket request types.
  *
  * @author Jaime Vaz - Initial contribution
+ * @author Christian Heimerl - added slave commands
  *
  */
 public enum SilvercrestWifiSocketRequestType {
@@ -22,7 +23,11 @@ public enum SilvercrestWifiSocketRequestType {
     /** Request Status. */
     GPIO_STATUS("020000000004040404"),
     /** Discover socket. The command has one placeholder for the mac address. */
-    DISCOVERY("23%s0202");
+    DISCOVERY("23%s0202"),
+    /** Request ON for slave address (mentioned as placeholder %s). */
+    SLAVE_ON("08%s6004040404"),
+    /** Request OFF for slave address (mentioned as placeholder %s). */
+    SLAVE_OFF("08%s7004040404");
 
     private String command;
 

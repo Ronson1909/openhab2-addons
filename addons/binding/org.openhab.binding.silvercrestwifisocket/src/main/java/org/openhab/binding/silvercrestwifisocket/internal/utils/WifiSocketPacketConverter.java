@@ -59,8 +59,9 @@ public class WifiSocketPacketConverter {
      * 00 -- 0029 -- C1 -- 11 -- 7150 (SilverCrest)
      * 00 -- 0029 -- C2 -- 11 -- 92DD (EasyHome)
      */
-    private static String REGEX_START_OF_RECEIVED_PACKET = "00([A-F0-9]{4})(?:C21192DD|C1117150)";
-    private static String REGEX_HEXADECIMAL_PAIRS = "([A-F0-9]{2})*";
+    private static String REGEX_HEXADECIMAL_PAIR = "([A-F0-9]{2})";
+    private static String REGEX_HEXADECIMAL_PAIRS = REGEX_HEXADECIMAL_PAIR + "*";
+    private static String REGEX_START_OF_RECEIVED_PACKET = "00" + REGEX_HEXADECIMAL_PAIR + "{2}(?:C21192DD|C1117150)";
 
     private static String REGEX_START_OF_RECEIVED_PACKET_SEARCH_MAC_ADDRESS = REGEX_START_OF_RECEIVED_PACKET + "23"
             + REGEX_HEXADECIMAL_PAIRS;
@@ -72,6 +73,8 @@ public class WifiSocketPacketConverter {
             + REGEX_HEXADECIMAL_PAIRS;
     private static String REGEX_START_OF_RECEIVED_PACKET_RESPONSE_GPIO_CHANGE_REQUEST = REGEX_START_OF_RECEIVED_PACKET
             + "01" + REGEX_HEXADECIMAL_PAIRS;
+    private static String REGEX_START_OF_RECEIVED_PACKET_CMD_SLAVE = REGEX_START_OF_RECEIVED_PACKET + "0800(07){7}";
+    // + REGEX_HEXADECIMAL_PAIR + "{3}(60|70)(04){4}";
 
     /**
      * Default constructor of the packet converter.
@@ -106,8 +109,7 @@ public class WifiSocketPacketConverter {
     public byte[] transformToByteMessage(final SilvercrestWifiSocketRequest requestPacket) {
         byte[] requestDatagram = null;
         String fullCommand = ENCRYPT_PREFIX + PACKET_NUMBER + requestPacket.getVendor().getCompanyCode() + DEVICE_TYPE
-                + requestPacket.getVendor().getAuthenticationCode()
-                + String.format(requestPacket.getType().getCommand(), requestPacket.getMacAddress());
+                + requestPacket.getVendor().getAuthenticationCode() + requestPacket.getCommand();
 
         byte[] inputByte = hexStringToByteArray(fullCommand);
         byte[] bEncrypted;
@@ -174,9 +176,10 @@ public class WifiSocketPacketConverter {
         logger.trace("The mac address of the sender of the packet is: {}", macAddress);
         String decryptedData = this.decrypt(hexPacket.substring(18, hexPacket.length()));
 
-        logger.trace("Response packet decrypted data: [{}] with lenght: {}", decryptedData, decryptedData.length());
+        logger.trace("Response packet decrypted data: [{}] with length: {}", decryptedData, decryptedData.length());
 
         SilvercrestWifiSocketResponseType responseType;
+        String slaveAddress = "";
         // check packet integrity
         if (Pattern.matches(REGEX_START_OF_RECEIVED_PACKET_SEARCH_MAC_ADDRESS, decryptedData)) {
             responseType = SilvercrestWifiSocketResponseType.DISCOVERY;
@@ -207,6 +210,20 @@ public class WifiSocketPacketConverter {
                     : SilvercrestWifiSocketResponseType.OFF;
             logger.trace("Socket status: {}", responseType);
 
+        } else if (Pattern.matches(REGEX_START_OF_RECEIVED_PACKET_CMD_SLAVE, decryptedData)) {
+            // unfortunately the slave response has no actual content
+            responseType = SilvercrestWifiSocketResponseType.ACK;
+            logger.trace("Received slave command!");
+
+            /*
+             * String status = decryptedData.substring(22, 24);
+             * responseType = "60".equalsIgnoreCase(status) ? SilvercrestWifiSocketResponseType.ON
+             * : SilvercrestWifiSocketResponseType.OFF;
+             * 
+             * slaveAddress = decryptedData.substring(16, 22);
+             * 
+             * logger.trace("Socket slave address {} with status: {}", slaveAddress, responseType);
+             */
         } else {
             throw new PacketIntegrityErrorException("The packet decrypted is with wrong format. \nPacket:[" + hexPacket
                     + "]  \nDecryptedPacket:[" + decryptedData + "]");
@@ -226,7 +243,7 @@ public class WifiSocketPacketConverter {
 
         logger.trace("Decrypt success. Packet is from socket with mac address [{}] and type is [{}] and vendor is [{}]",
                 macAddress, responseType, vendor.toString());
-        return new SilvercrestWifiSocketResponse(macAddress, responseType, vendor);
+        return new SilvercrestWifiSocketResponse(macAddress, null, responseType, vendor, slaveAddress);
     }
 
     /**

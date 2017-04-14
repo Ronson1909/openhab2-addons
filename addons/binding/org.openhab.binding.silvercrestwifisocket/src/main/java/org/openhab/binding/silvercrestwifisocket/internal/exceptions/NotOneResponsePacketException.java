@@ -9,7 +9,7 @@
 package org.openhab.binding.silvercrestwifisocket.internal.exceptions;
 
 /**
- * Exception throwed when some packet is not one response packet.
+ * Exception thrown when some packet is not one response packet.
  *
  * @author Jaime Vaz - Initial contribution
  *

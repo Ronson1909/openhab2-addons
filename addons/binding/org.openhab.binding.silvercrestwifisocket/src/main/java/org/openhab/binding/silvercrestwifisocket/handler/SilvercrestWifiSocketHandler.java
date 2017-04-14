@@ -35,6 +35,7 @@ import org.openhab.binding.silvercrestwifisocket.internal.entities.SilvercrestWi
 import org.openhab.binding.silvercrestwifisocket.internal.enums.SilvercrestWifiSocketRequestType;
 import org.openhab.binding.silvercrestwifisocket.internal.enums.SilvercrestWifiSocketVendor;
 import org.openhab.binding.silvercrestwifisocket.internal.exceptions.MacAddressNotValidException;
+import org.openhab.binding.silvercrestwifisocket.internal.exceptions.SlaveAddressNotValidException;
 import org.openhab.binding.silvercrestwifisocket.internal.utils.NetworkUtils;
 import org.openhab.binding.silvercrestwifisocket.internal.utils.ValidationUtils;
 import org.openhab.binding.silvercrestwifisocket.internal.utils.WifiSocketPacketConverter;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * sent to one of the channels.
  *
  * @author Jaime Vaz - Initial contribution
- * @author Christian Heimerl - for integration of EasyHome
+ * @author Christian Heimerl - for integration of EasyHome and slaves
  */
 public class SilvercrestWifiSocketHandler extends BaseThingHandler {
 
@@ -55,6 +56,7 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
     private String hostAddress;
     private String macAddress;
     private SilvercrestWifiSocketVendor vendor = SilvercrestWifiSocketBindingConstants.DEFAULT_VENDOR;
+    private String slaveAddress;
     private Long updateInterval = SilvercrestWifiSocketBindingConstants.DEFAULT_REFRESH_INTERVAL;
 
     private final WifiSocketPacketConverter converter = new WifiSocketPacketConverter();
@@ -67,12 +69,14 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
      * @param thing the thing of the handler.
      * @throws MacAddressNotValidException if the mac address isn't valid.
      */
-    public SilvercrestWifiSocketHandler(final Thing thing) throws MacAddressNotValidException {
+    public SilvercrestWifiSocketHandler(final Thing thing)
+            throws MacAddressNotValidException, SlaveAddressNotValidException {
         super(thing);
         this.saveMacAddressFromConfiguration(this.getConfig());
         this.saveHostAddressFromConfiguration(this.getConfig());
         this.saveUpdateIntervalFromConfiguration(this.getConfig());
         this.saveVendorFromConfiguration(this.getConfig());
+        this.saveSlaveAddressFromConfiguration(this.getConfig());
     }
 
     @Override
@@ -80,14 +84,23 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
         if (channelUID.getId().equals(WIFI_SOCKET_CHANNEL_ID)) {
             logger.debug("Silvercrest socket command received: {}", command);
 
-            if (command == OnOffType.ON) {
-                this.sendCommand(SilvercrestWifiSocketRequestType.ON);
+            if (slaveAddress.isEmpty()) {
+                if (command == OnOffType.ON) {
+                    this.sendCommand(SilvercrestWifiSocketRequestType.ON);
 
-            } else if (command == OnOffType.OFF) {
-                this.sendCommand(SilvercrestWifiSocketRequestType.OFF);
+                } else if (command == OnOffType.OFF) {
+                    this.sendCommand(SilvercrestWifiSocketRequestType.OFF);
 
-            } else if (command == RefreshType.REFRESH) {
-                this.sendCommand(SilvercrestWifiSocketRequestType.GPIO_STATUS);
+                } else if (command == RefreshType.REFRESH) {
+                    this.sendCommand(SilvercrestWifiSocketRequestType.GPIO_STATUS);
+                }
+            } else {
+                if (command == OnOffType.ON) {
+                    this.sendCommand(SilvercrestWifiSocketRequestType.SLAVE_ON);
+
+                } else if (command == OnOffType.OFF) {
+                    this.sendCommand(SilvercrestWifiSocketRequestType.SLAVE_OFF);
+                }
             }
         }
     }
@@ -164,7 +177,7 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
      */
     private void lookupForSocketHostAddress() {
         SilvercrestWifiSocketRequest requestPacket = new SilvercrestWifiSocketRequest(this.macAddress,
-                SilvercrestWifiSocketRequestType.DISCOVERY, this.vendor);
+                SilvercrestWifiSocketRequestType.DISCOVERY, this.vendor, this.slaveAddress);
 
         for (InetAddress broadcastAddressFound : NetworkUtils.getAllBroadcastAddresses()) {
             logger.debug("Will query for device with mac address {} in network with broadcast address {}",
@@ -198,10 +211,14 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
             case DISCOVERY:
                 break;
             case OFF:
-                this.updateState(SilvercrestWifiSocketBindingConstants.WIFI_SOCKET_CHANNEL_ID, OnOffType.OFF);
+                if (this.slaveAddress.equals(receivedMessage.getSlaveAddress())) {
+                    this.updateState(SilvercrestWifiSocketBindingConstants.WIFI_SOCKET_CHANNEL_ID, OnOffType.OFF);
+                }
                 break;
             case ON:
-                this.updateState(SilvercrestWifiSocketBindingConstants.WIFI_SOCKET_CHANNEL_ID, OnOffType.ON);
+                if (this.slaveAddress.equals(receivedMessage.getSlaveAddress())) {
+                    this.updateState(SilvercrestWifiSocketBindingConstants.WIFI_SOCKET_CHANNEL_ID, OnOffType.ON);
+                }
                 break;
             default:
                 logger.debug("Command not found!");
@@ -269,16 +286,27 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
     private void saveVendorFromConfiguration(final Configuration configuration) {
         // TODO: Validation of Vendor!?
         if ((configuration != null) && (configuration.get(SilvercrestWifiSocketBindingConstants.VENDOR_ARG) != null)) {
-            this.vendor =
-                    // SilvercrestWifiSocketVendor.valueOf(String.valueOf(
-                    SilvercrestWifiSocketVendor.valueOf(
-                            String.valueOf(configuration.get(SilvercrestWifiSocketBindingConstants.VENDOR_ARG)));
+            this.vendor = SilvercrestWifiSocketVendor
+                    .valueOf(String.valueOf(configuration.get(SilvercrestWifiSocketBindingConstants.VENDOR_ARG)));
         }
-        /*
-         * if (this.vendor == null) {
-         * throw new MacAddressNotValidException("Mac address is not valid", this.macAddress);
-         * }
-         */
+    }
+
+    /**
+     * Saves the slave address from configuration in field.
+     *
+     * @param configuration The {@link Configuration}
+     */
+    private void saveSlaveAddressFromConfiguration(final Configuration configuration)
+            throws SlaveAddressNotValidException {
+        if ((configuration != null)
+                && (configuration.get(SilvercrestWifiSocketBindingConstants.SLAVE_ADDRESS_ARG) != null)) {
+            this.slaveAddress = String
+                    .valueOf(configuration.get(SilvercrestWifiSocketBindingConstants.SLAVE_ADDRESS_ARG));
+        }
+
+        if (!this.slaveAddress.isEmpty() && !this.slaveAddress.matches("^[0-9a-fA-F]{6}$")) {
+            throw new SlaveAddressNotValidException("Slave address is not valid", this.slaveAddress);
+        }
     }
 
     /**
@@ -299,7 +327,9 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
             InetAddress address;
             try {
                 address = InetAddress.getByName(this.hostAddress);
-                this.sendRequestPacket(new SilvercrestWifiSocketRequest(this.macAddress, type, this.vendor), address);
+                this.sendRequestPacket(
+                        new SilvercrestWifiSocketRequest(this.macAddress, type, this.vendor, this.slaveAddress),
+                        address);
             } catch (UnknownHostException e) {
                 logger.debug("Host Address not found: {}. Will lookup Mac address.");
                 this.hostAddress = null;
@@ -356,11 +386,15 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
             }
             this.saveUpdateIntervalFromConfiguration(configuration);
             this.saveVendorFromConfiguration(configuration);
+            this.saveSlaveAddressFromConfiguration(configuration);
 
             this.initGetStatusAndKeepAliveThread();
             this.saveConfigurationsUsingCurrentStates();
         } catch (MacAddressNotValidException e) {
             logger.error("The Mac address passed is not valid! {}", e.getMacAddress());
+            this.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
+        } catch (SlaveAddressNotValidException e) {
+            logger.error("The slave address passed is not valid! {}", e.getSlaveAddress());
             this.updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
         }
 
@@ -374,6 +408,7 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
         map.put(SilvercrestWifiSocketBindingConstants.MAC_ADDRESS_ARG, this.macAddress);
         map.put(SilvercrestWifiSocketBindingConstants.HOST_ADDRESS_ARG, this.hostAddress);
         map.put(SilvercrestWifiSocketBindingConstants.VENDOR_ARG, this.vendor.toString());
+        map.put(SilvercrestWifiSocketBindingConstants.SLAVE_ADDRESS_ARG, this.slaveAddress);
         map.put(SilvercrestWifiSocketBindingConstants.UPDATE_INTERVAL_ARG, this.updateInterval);
 
         Configuration newConfiguration = new Configuration(map);
@@ -391,5 +426,9 @@ public class SilvercrestWifiSocketHandler extends BaseThingHandler {
 
     public SilvercrestWifiSocketVendor getVendor() {
         return this.vendor;
+    }
+
+    public String getSlaveAddress() {
+        return this.slaveAddress;
     }
 }

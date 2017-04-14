@@ -21,6 +21,7 @@ import org.openhab.binding.silvercrestwifisocket.discovery.SilvercrestWifiSocket
 import org.openhab.binding.silvercrestwifisocket.handler.SilvercrestWifiSocketHandler;
 import org.openhab.binding.silvercrestwifisocket.handler.SilvercrestWifiSocketMediator;
 import org.openhab.binding.silvercrestwifisocket.internal.exceptions.MacAddressNotValidException;
+import org.openhab.binding.silvercrestwifisocket.internal.exceptions.SlaveAddressNotValidException;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
@@ -61,6 +62,8 @@ public class SilvercrestWifiSocketHandlerFactory extends BaseThingHandlerFactory
                 return handler;
             } catch (MacAddressNotValidException e) {
                 logger.debug("The mac address passed to WifiSocketHandler by configurations is not valid.");
+            } catch (SlaveAddressNotValidException e) {
+                logger.debug("The slave address passed to WifiSocketHandler by configurations is not valid.");
             }
 
         }
